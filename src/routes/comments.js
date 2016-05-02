@@ -23,7 +23,9 @@ router.get('/asTree', function(req, res, next) {
 });
 
 router.get('/depth', function(req, res, next) {
-
+    CommentModel.getSubtreeDepth()
+        .then(res.json.bind(res))
+        .catch(next);
 });
 
 router.get('/add', function(req, res, next) {
@@ -31,7 +33,7 @@ router.get('/add', function(req, res, next) {
     var html = `<form method="POST" action="/comments">
         <input name="text">
         <input type="hidden" name="author" value="${authorId}">
-        <input type="hidden" name="parent" value="572755955749f074527af07b">
+        <input type="hidden" name="parent" value="57274097d60f8de451d9142c">
         <input type="submit" value="POST">
     `;
     res.send(html);

@@ -1,5 +1,8 @@
+'use strict';
+
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
+var debugDepth = require('debug')('comment/depth');
 
 var schema = new Schema({
     parent: {type: Schema.Types.ObjectId, ref: 'comment'},
@@ -8,39 +11,65 @@ var schema = new Schema({
     date: {type: Date, default: Date.now}
 });
 
+schema.index({parent: 1});
+
 var model = mongoose.model('comment', schema);
 
-module.exports.create = function(data) {
-    var doc = new model(data);
-    return doc.save();
-};
+module.exports = {
 
-module.exports.getList = function() {
-    return model.find().lean().exec();
-};
+    create: function (data) {
+        var doc = new model(data);
+        return doc.save();
+    },
 
-module.exports.getTree = function() {
-    return model.find().lean().exec().then((doc) => {
-        var itemsById = {};
-        var root = [];
-        doc.forEach((item) => {
-            item.children = [];
-            itemsById[item._id] = item
-        });
-        doc.forEach((item) => {
-            if (item.parent) {
-                if (itemsById[item.parent]) {
-                    itemsById[item.parent].children.push(item);
+    getList: function () {
+        return model.find().lean().exec();
+    },
+
+    getTree: function () {
+        return model.find().lean().exec().then((doc) => {
+            var itemsById = {};
+            var root = [];
+            doc.forEach((item) => {
+                item.children = [];
+                itemsById[item._id] = item
+            });
+            doc.forEach((item) => {
+                if (item.parent) {
+                    if (itemsById[item.parent]) {
+                        itemsById[item.parent].children.push(item);
+                    }
                 }
+                else {
+                    root.push(item);
+                }
+            });
+            return root;
+        })
+    },
+
+    getSubtreeDepth: function(commentId) {
+        if (!commentId) {
+            commentId = null;
+        }
+        debugDepth(`called getSubtreeDepth(${commentId})`);
+        return model.find({parent: commentId}, {_id: 1}).then((doc) => {
+            debugDepth(`found ${doc.length} children of comment #${commentId}`);
+            if (doc.length === 0) {
+                return 1;
             }
             else {
-                root.push(item);
+                let promises = [];
+                let i;
+                for (i = 0; i < doc.length; i++) {
+                    promises.push(this.getSubtreeDepth(doc[i]._id))
+                }
+                return Promise.all(promises).then((results) => {
+                    var result = 1 + Math.max.apply(null, results);
+                    debugDepth(`children depths of comment #${commentId}: ${results}; subtree depth: ${result}`);
+                    return result;
+                })
             }
-        });
-        return root;
-    })
-};
-
-module.exports.getChildren = function(commentId) {
-
+        })
+    }
 };
