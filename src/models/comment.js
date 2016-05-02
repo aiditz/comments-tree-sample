@@ -8,4 +8,39 @@ var schema = new Schema({
     date: {type: Date, default: Date.now}
 });
 
-module.exports = mongoose.model('comment', schema);
+var model = mongoose.model('comment', schema);
+
+module.exports.create = function(data) {
+    var doc = new model(data);
+    return doc.save();
+};
+
+module.exports.getList = function() {
+    return model.find().lean().exec();
+};
+
+module.exports.getTree = function() {
+    return model.find().lean().exec().then((doc) => {
+        var itemsById = {};
+        var root = [];
+        doc.forEach((item) => {
+            item.children = [];
+            itemsById[item._id] = item
+        });
+        doc.forEach((item) => {
+            if (item.parent) {
+                if (itemsById[item.parent]) {
+                    itemsById[item.parent].children.push(item);
+                }
+            }
+            else {
+                root.push(item);
+            }
+        });
+        return root;
+    })
+};
+
+module.exports.getChildren = function(commentId) {
+
+};
