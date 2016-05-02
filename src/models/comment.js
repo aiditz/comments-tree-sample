@@ -57,7 +57,7 @@ module.exports = {
         }
         debugDepth(`called getSubtreeDepth(${commentId})`);
         return model.find({parent: commentId}, {_id: 1}).lean().then((doc) => {
-            debugDepth(`found ${doc.length} children of comment #${commentId}`);
+            debugDepth(`found ${doc.length} children of the comment #${commentId}`);
             if (doc.length === 0) {
                 return 1;
             }
@@ -69,7 +69,7 @@ module.exports = {
                 }
                 return Promise.all(promises).then((results) => {
                     var result = 1 + Math.max.apply(null, results);
-                    debugDepth(`children depths of comment #${commentId}: ${results}; subtree depth: ${result}`);
+                    debugDepth(`children depths of the comment #${commentId}: ${results}; subtree depth: ${result}`);
                     return result;
                 })
             }
