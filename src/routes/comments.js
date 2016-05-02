@@ -23,7 +23,7 @@ router.get('/asTree', function(req, res, next) {
 });
 
 router.get('/depth', function(req, res, next) {
-    CommentModel.getSubtreeDepth()
+    CommentModel.getSubtreeDepth(req.query.commentId)
         .then(res.json.bind(res))
         .catch(next);
 });

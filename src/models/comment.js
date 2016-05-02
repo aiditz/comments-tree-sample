@@ -2,7 +2,7 @@
 
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
-var debugDepth = require('debug')('comment/depth');
+var debugDepth = require('debug')('models/comment/depth');
 
 var schema = new Schema({
     parent: {type: Schema.Types.ObjectId, ref: 'comment'},
@@ -52,8 +52,11 @@ module.exports = {
         if (!commentId) {
             commentId = null;
         }
+        if (typeof commentId === 'string') {
+            commentId = new mongoose.Types.ObjectId(commentId);
+        }
         debugDepth(`called getSubtreeDepth(${commentId})`);
-        return model.find({parent: commentId}, {_id: 1}).then((doc) => {
+        return model.find({parent: commentId}, {_id: 1}).lean().then((doc) => {
             debugDepth(`found ${doc.length} children of comment #${commentId}`);
             if (doc.length === 0) {
                 return 1;
