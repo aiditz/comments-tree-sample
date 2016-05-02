@@ -9,19 +9,28 @@ var passport = require('passport');
 var mongoose = require('mongoose');
 
 var app = express();
-app.use(bodyParser.urlencoded({ extended: true, limit: '1mb' }));
-//app.use(cookieParser(config.sessionSecret));
-//app.use(passport.initialize());
 
-mongoose.connect(config.mongoose.url);
-
-app.set('json spaces', 4);
-app.use('/login', require('./routes/login'));
-app.use('/users', require('./routes/users'));
-app.use('/comments', require('./routes/comments'));
-app.use(require('./routes/error'));
-
+initExpress();
+initCore();
+initRoutes();
 startServer();
+
+function initExpress() {
+	app.set('json spaces', 4);
+	app.use(passport.initialize());
+	app.use(bodyParser.urlencoded({ extended: true, limit: '1mb' }));
+}
+
+function initCore() {
+	mongoose.connect(config.mongoose.url);
+	require('./core/passport.js');
+}
+
+function initRoutes() {
+	app.use('/users', require('./routes/users'));
+	app.use('/comments', require('./routes/comments'));
+	//app.use(require('./routes/error'));
+}
 
 function startServer() {
 	var port = process.env.PORT || 3000;
