@@ -3,7 +3,7 @@
 var config = require('./config');
 var http = require('http');
 var express = require('express');
-var cookieParser = require('cookie-parser');
+//var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var passport = require('passport');
 var mongoose = require('mongoose');
@@ -15,9 +15,11 @@ app.use(bodyParser.urlencoded({ extended: true, limit: '1mb' }));
 
 mongoose.connect(config.mongoose.url);
 
+app.set('json spaces', 4);
 app.use('/login', require('./routes/login'));
 app.use('/users', require('./routes/users'));
 app.use('/comments', require('./routes/comments'));
+app.use(require('./routes/error'));
 
 startServer();
 
