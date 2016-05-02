@@ -1,14 +1,23 @@
 'use strict';
 
+var passport = require('passport');
 var router = require('express').Router();
 var mongoose = require('mongoose');
 var CommentModel = require('../models/comment');
+var UserModel = require('../models/user');
 
-router.post('/', function(req, res, next) {
-    CommentModel.create(req.body)
-        .then(res.json.bind(res))
-        .catch(next);
-});
+router.post('/',
+    passport.authenticate('jwt', { session: false }),
+    function(req, res, next) {
+        CommentModel.create(req.body)
+            .then((doc) => {
+                return req.user.incCommentsCounter().then(() => {
+                    return res.json(doc._id);
+                })
+            })
+            .catch(next);
+    }
+);
 
 router.get('/asList', function(req, res, next) {
     CommentModel.getList()
@@ -34,6 +43,7 @@ router.get('/add', function(req, res, next) {
         <input name="text">
         <input type="hidden" name="author" value="${authorId}">
         <input type="hidden" name="parent" value="57274097d60f8de451d9142c">
+        <input type="text" name="token" value="eyJhbGciOiJIUzI1NiJ9.NTcyNzg5NWM5YWE4NWIyNDUyOGRlNjg4.HhazG-WZdEK5tGhSGaqah4Hv4P5FuNzwQAMifSKte68">
         <input type="submit" value="POST">
     `;
     res.send(html);
