@@ -20,12 +20,12 @@ describe('API:', function () {
 
     describe('/users', function () {
         describe('/register', function () {
-            [1, 2, 3, 4, 5].forEach(function (item) {
-                it('successful registration #' + item, function (done) {
+            [1, 2, 3, 4, 5].forEach(function (index) {
+                it('successful registration #' + index, function (done) {
                     request.post({
                         url: url + '/users/register',
                         form: {
-                            login: 'login' + item + '@test.ru',
+                            login: 'login' + index + '@test.ru',
                             password: '12345',
                             name: 'test'
                         }
@@ -143,19 +143,6 @@ describe('API:', function () {
                 });
             });
         });
-
-        describe('/sortedByComments', function () {
-            it('should get a list of users sorted by comments count', function (done) {
-                request(url + '/users/sortedByComments', function (error, response, body) {
-                    var json = JSON.parse(body);
-                    expect(json).to.be.an('array')
-                        .that.has.lengthOf(5);
-                    expect(error).to.not.exists;
-                    expect(response.statusCode).to.equal(200);
-                    done();
-                });
-            });
-        });
     });
 
     describe('/comments', function () {
@@ -167,12 +154,13 @@ describe('API:', function () {
         describe('post comment', function () {
             for (let i = 0; i < COMMENTS_COUNT; i++) {
                 it('successful post comment #' + i, function (done) {
+                    var tokenIndex = (i + Math.floor(Math.random() * testTokens.length));
                     request.post({
                         url: url + '/comments',
                         form: {
                             parent: parentCommentId,
                             text: 'test comment #' + i,
-                            token: testTokens[i % testTokens.length]
+                            token: testTokens[tokenIndex % testTokens.length]
                         }
                     }, function (error, response, body) {
                         var json = JSON.parse(body);
@@ -265,7 +253,34 @@ describe('API:', function () {
                 });
             });
         });
-
     });
+
+    describe('/users', function() {
+        describe('/sortedByComments', function () {
+            it('should get a list of users sorted by comments count', function (done) {
+                request(url + '/users/sortedByComments', function (error, response, body) {
+                    var currentValue;
+                    var previousValue;
+                    var i;
+                    var json = JSON.parse(body);
+
+                    expect(json).to.be.an('array')
+                        .that.has.lengthOf(5);
+
+                    // check that the array is sorted
+                    previousValue = json[0].comments_count;
+                    for (i = 1; i < json.length; i++) {
+                        currentValue = json[i].comments_count;
+                        expect(currentValue).to.be.at.most(previousValue);
+                        previousValue = currentValue;
+                    }
+
+                    expect(error).to.not.exists;
+                    expect(response.statusCode).to.equal(200);
+                    done();
+                });
+            });
+        });
+    })
 
 });
