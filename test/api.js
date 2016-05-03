@@ -1,11 +1,15 @@
 'use strict';
 
+var jwt = require('jsonwebtoken');
 var expect = require('chai').expect;
 var request = require('request');
+var mongoose = require('mongoose');
+
+var config = require('../src/config');
 var db = require('../src/core/mongoose').connection;
+
 var url = 'http://localhost:3000';
 var server;
-
 var testTokens = [];
 var testCommentId = null;
 
@@ -228,9 +232,23 @@ describe('API:', function () {
                 request.post({
                     url: url + '/comments',
                     form: {
-                        parent: parentCommentId,
                         text: 'test comment',
                         token: testTokens[0] + 'incorrect'
+                    }
+                }, function (error, response, body) {
+                    expect(response.statusCode).to.equal(401);
+                    done();
+                });
+            });
+
+            it('pass correct token of non-existent user', function (done) {
+                var userId = new mongoose.Types.ObjectId();
+                var token = jwt.sign({_id: userId.toString()}, config.jwt.secret, config.jwt.options);
+                request.post({
+                    url: url + '/comments',
+                    form: {
+                        text: 'test comment',
+                        token: token
                     }
                 }, function (error, response, body) {
                     expect(response.statusCode).to.equal(401);

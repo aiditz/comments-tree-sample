@@ -23,13 +23,6 @@ passport.use(new JwtStrategy({
     secretOrKey: config.jwt.secret
 }, function (jwtPayload, done) {
     UserModel.findById(jwtPayload._id, function (err, user) {
-        if (err) {
-            return done(err, false);
-        }
-        if (user) {
-            done(null, user);
-        } else {
-            done(null, false);
-        }
+        done(err, user? user : false);
     });
 }));
