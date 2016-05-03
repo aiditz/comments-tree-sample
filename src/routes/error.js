@@ -1,6 +1,6 @@
 'use strict';
 
-module.exports = function(err, req, res, next) {
+module.exports = function (err, req, res, next) {
     var json = {
         code: err.code,
         msg: err.message

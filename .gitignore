@@ -1,6 +1,3 @@
 .idea
-/config/local.json
 node_modules/*
-/launch
-/static/compiled/*.map
 *.log

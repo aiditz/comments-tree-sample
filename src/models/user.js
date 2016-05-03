@@ -20,17 +20,17 @@ var schema = new Schema({
 
 schema.index({login: 1}, {unique: true});
 
-schema.statics.PUBLIC_FIELDS = { hash: 0, __v: 0 };
+schema.statics.PUBLIC_FIELDS = {hash: 0, __v: 0};
 
-schema.methods.validPassword = function(password) {
+schema.methods.validPassword = function (password) {
     return passwordHash.verify(password, this.hash);
 };
 
-schema.methods.generateJwt = function() {
+schema.methods.generateJwt = function () {
     return jwt.sign({_id: this._id.toString()}, config.jwt.secret, config.jwt.options);
 };
 
-schema.methods.incCommentsCounter = function() {
+schema.methods.incCommentsCounter = function () {
     this.comments_count++;
     return this.save();
 };
@@ -39,7 +39,7 @@ var UserMongooseModel = mongoose.model('user', schema);
 
 class UserModel extends UserMongooseModel {
 
-    static register (login, password, profile) {
+    static register(login, password, profile) {
         return UserMongooseModel.findOne({login: login}, {_id: 1}).lean().then((doc) => {
             if (doc) {
                 throw new Error('Username is busy');
@@ -54,10 +54,10 @@ class UserModel extends UserMongooseModel {
             return user.save().then((doc) => {
                 return doc.generateJwt();
             });
-        })
+        });
     }
 
-    static login (login, password) {
+    static login(login, password) {
         return UserMongooseModel.findOne({login: login}).then((doc) => {
             if (!doc) {
                 throw new Error('Incorrect login');
@@ -68,11 +68,11 @@ class UserModel extends UserMongooseModel {
             }
 
             return doc.generateJwt();
-        })
+        });
     }
 
     static sortedByComments() {
-        return UserMongooseModel.find({}, this.PUBLIC_FIELDS).sort({ comments_count: -1 }).limit(1000).exec();
+        return UserMongooseModel.find({}, this.PUBLIC_FIELDS).sort({comments_count: -1}).limit(1000).exec();
     }
 
 }

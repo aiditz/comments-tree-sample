@@ -17,22 +17,22 @@ var CommentMongooseModel = mongoose.model('comment', schema);
 
 class CommentModel extends CommentMongooseModel {
 
-    static create (data) {
+    static create(data) {
         var doc = new CommentMongooseModel(data);
         return doc.save();
     }
 
-    static getList () {
+    static getList() {
         return CommentMongooseModel.find().lean().exec();
     }
 
-    static getTree () {
-        return CommentMongooseModel.find().populate('author', { _id: 1, login: 1 }).lean().exec().then((doc) => {
+    static getTree() {
+        return CommentMongooseModel.find().populate('author', {_id: 1, login: 1}).lean().exec().then((doc) => {
             var itemsById = {};
             var root = [];
             doc.forEach((item) => {
                 item.children = [];
-                itemsById[item._id] = item
+                itemsById[item._id] = item;
             });
             doc.forEach((item) => {
                 if (item.parent) {
@@ -45,7 +45,7 @@ class CommentModel extends CommentMongooseModel {
                 }
             });
             return root;
-        })
+        });
     }
 
     static getSubtreeDepth(commentId) {
@@ -55,7 +55,7 @@ class CommentModel extends CommentMongooseModel {
         if (typeof commentId === 'string') {
             commentId = new mongoose.Types.ObjectId(commentId);
         }
-        return CommentMongooseModel.find({parent: commentId}, { _id: 1 }).populate('author').lean().then((doc) => {
+        return CommentMongooseModel.find({parent: commentId}, {_id: 1}).populate('author').lean().then((doc) => {
             if (doc.length === 0) {
                 return 1;
             }
@@ -63,13 +63,13 @@ class CommentModel extends CommentMongooseModel {
                 let promises = [];
                 let i;
                 for (i = 0; i < doc.length; i++) {
-                    promises.push(this.getSubtreeDepth(doc[i]._id))
+                    promises.push(this.getSubtreeDepth(doc[i]._id));
                 }
                 return Promise.all(promises).then((results) => {
                     return 1 + Math.max.apply(null, results);
-                })
+                });
             }
-        })
+        });
     }
 }
 
