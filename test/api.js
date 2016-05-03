@@ -20,10 +20,18 @@ describe('API: ', function () {
         });
     });
 
-    before('clear collections', function () {
-        return Promise.resolve()
-            .then(() => db.collection('users').remove())
-            .then(() => db.collection('comments').remove());
+    before('clear data', function () {
+        return Promise.all([
+            () => db.collection('users').remove(),
+            () => db.collection('comments').remove()
+        ]);
+    });
+
+    after('clear data', function () {
+        return Promise.all([
+            () => db.collection('users').remove(),
+            () => db.collection('comments').remove()
+        ]);
     });
 
     after('close http server', function (done) {
