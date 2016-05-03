@@ -72,7 +72,7 @@ class UserModel extends UserMongooseModel {
     }
 
     static sortedByComments() {
-        return UserMongooseModel.find({}, this.PUBLIC_FIELDS).exec();
+        return UserMongooseModel.find({}, this.PUBLIC_FIELDS).sort({ comments_count: -1 }).limit(1000).exec();
     }
 
 }
