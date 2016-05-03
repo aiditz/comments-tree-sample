@@ -21,8 +21,8 @@ passport.use(new JwtStrategy({
         tokenBodyField: 'token'
     }),
     secretOrKey: config.jwt.secret
-}, function (jwt_payload, done) {
-    UserModel.findById(jwt_payload._id, function (err, user) {
+}, function (jwtPayload, done) {
+    UserModel.findById(jwtPayload._id, function (err, user) {
         if (err) {
             return done(err, false);
         }

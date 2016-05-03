@@ -20,28 +20,28 @@
     </h1>
     <div class='clearfix'>
       <div class='fl pad1y space-right2'>
-        <span class="strong">58.82% </span>
+        <span class="strong">100% </span>
         <span class="quiet">Statements</span>
-        <span class='fraction'>10/17</span>
+        <span class='fraction'>19/19</span>
       </div>
       <div class='fl pad1y space-right2'>
         <span class="strong">100% </span>
         <span class="quiet">Branches</span>
-        <span class='fraction'>0/0</span>
+        <span class='fraction'>2/2</span>
       </div>
       <div class='fl pad1y space-right2'>
-        <span class="strong">0% </span>
+        <span class="strong">100% </span>
         <span class="quiet">Functions</span>
-        <span class='fraction'>0/4</span>
+        <span class='fraction'>4/4</span>
       </div>
       <div class='fl pad1y space-right2'>
-        <span class="strong">58.82% </span>
+        <span class="strong">100% </span>
         <span class="quiet">Lines</span>
-        <span class='fraction'>10/17</span>
+        <span class='fraction'>19/19</span>
       </div>
     </div>
   </div>
-  <div class='status-line medium'></div>
+  <div class='status-line high'></div>
 <pre><table class="coverage">
 <tr><td class="line-count quiet">1
 2
@@ -86,7 +86,9 @@
 41
 42
 43
-44</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+44
+45
+46</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1×</span>
 <span class="cline-any cline-yes">1×</span>
@@ -97,33 +99,35 @@
 <span class="cline-any cline-yes">1×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">100×</span>
+<span class="cline-any cline-yes">100×</span>
+<span class="cline-any cline-yes">11×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">100×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">100×</span>
+<span class="cline-any cline-yes">100×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1×</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1×</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">2×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -139,34 +143,36 @@ var UserModel = require('../models/user');
 &nbsp;
 router.post('/',
     passport.authenticate('jwt', {session: false}),
-<span class="fstat-no" title="function not covered" >    function (req, res, next) {</span>
-<span class="cstat-no" title="statement not covered" >        req.body.author = req.user._id;</span>
-<span class="cstat-no" title="statement not covered" >        CommentModel.create(req.body)</span>
+    function (req, res, next) {
+        req.body.author = req.user._id;
+        if (!req.body.parent) {
+            delete req.body.parent;
+        }
+        CommentModel.create(req.body)
             .then((doc) =&gt; {
-<span class="cstat-no" title="statement not covered" >                return req.user.incCommentsCounter().then(() =&gt; {</span>
-<span class="cstat-no" title="statement not covered" >                    return res.json(doc._id);</span>
+                return req.user.incCommentsCounter().then(() =&gt; {
+                    return res.json(doc._id);
                 });
             })
             .catch(next);
     }
 );
 &nbsp;
-router.get('/asList', <span class="fstat-no" title="function not covered" >function (req, res, next) {</span>
-<span class="cstat-no" title="statement not covered" >    CommentModel.getList()</span>
+router.get('/asList', function (req, res, next) {
+    CommentModel.getList()
         .then(res.json.bind(res))
         .catch(next);
 });
 &nbsp;
-router.get('/asTree', <span class="fstat-no" title="function not covered" >function (req, res, next) {</span>
-<span class="cstat-no" title="statement not covered" >    CommentModel.getTree()</span>
+router.get('/asTree', function (req, res, next) {
+    CommentModel.getTree()
         .then(res.json.bind(res))
         .catch(next);
 });
 &nbsp;
 router.get('/depth',
-    passport.authenticate('jwt', {session: false}),
-<span class="fstat-no" title="function not covered" >    function (req, res, next) {</span>
-<span class="cstat-no" title="statement not covered" >        CommentModel.getSubtreeDepth(req.query.commentId)</span>
+    function (req, res, next) {
+        CommentModel.getSubtreeDepth(req.query.commentId)
             .then(res.json.bind(res))
             .catch(next);
     }
@@ -178,7 +184,7 @@ module.exports = router;</pre></td></tr>
 </div><!-- /wrapper -->
 <div class='footer quiet pad2 space-top1 center small'>
   Code coverage
-  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Tue May 03 2016 19:05:19 GMT+0300 (Калининградское время (зима))
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Tue May 03 2016 20:35:33 GMT+0300 (Калининградское время (зима))
 </div>
 </div>
 <script src="../../prettify.js"></script>

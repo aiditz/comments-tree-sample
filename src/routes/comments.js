@@ -10,6 +10,9 @@ router.post('/',
     passport.authenticate('jwt', {session: false}),
     function (req, res, next) {
         req.body.author = req.user._id;
+        if (!req.body.parent) {
+            delete req.body.parent;
+        }
         CommentModel.create(req.body)
             .then((doc) => {
                 return req.user.incCommentsCounter().then(() => {
@@ -33,7 +36,6 @@ router.get('/asTree', function (req, res, next) {
 });
 
 router.get('/depth',
-    passport.authenticate('jwt', {session: false}),
     function (req, res, next) {
         CommentModel.getSubtreeDepth(req.query.commentId)
             .then(res.json.bind(res))
