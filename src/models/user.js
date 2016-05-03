@@ -43,6 +43,9 @@ class UserModel extends UserMongooseModel {
         var user;
         return Promise.resolve()
             .then(() => {
+                if (password.length < 5) {
+                    throw new Error('Minimum password length is 5');
+                }
                 var hash = passwordHash.generate(password);
                 user = new UserMongooseModel(profile);
                 user.login = login;
@@ -57,6 +60,9 @@ class UserModel extends UserMongooseModel {
             }, (err) => {
                 if (err.code == 11000) { // duplicate entry
                     throw new Error('Username busy');
+                }
+                else {
+                    throw err;
                 }
             });
     }

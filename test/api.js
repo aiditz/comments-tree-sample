@@ -28,7 +28,7 @@ describe('API:', function () {
 
     after(function () {
         return Promise.all([
-            db.collection('users').remove(),
+            //db.collection('users').remove(),
             db.collection('comments').remove()
         ]);
     });
@@ -48,12 +48,12 @@ describe('API:', function () {
 
         describe('/register', function() {
 
-            it('successful', function (done) {
+            it('successful registration', function (done) {
                 request.post({
                     url: url + '/users/register',
                     form: {
                         login: 'test@test.ru',
-                        password: '123',
+                        password: '12345',
                         name: 'test'
                     }
                 }, function (error, response, body) {
@@ -73,15 +73,14 @@ describe('API:', function () {
                     url: url + '/users/register',
                     form: {
                         login: 'test@test.ru',
-                        password: '123',
+                        password: '12345',
                         name: 'test'
                     }
                 }, function (error, response, body) {
                     expect(error).to.not.exists;
                     expect(response.statusCode).to.equal(500);
                     var json = JSON.parse(body);
-                    expect(json).to.be.an('object')
-                        .with.property('error');
+                    expect(json).to.have.property('error');
                     done();
                 });
             });
@@ -90,15 +89,13 @@ describe('API:', function () {
                 request.post({
                     url: url + '/users/register',
                     form: {
-                        login: 'test@test.ru',
-                        password: '1',
+                        login: 'test2@test.ru',
+                        password: '',
                         name: 'test'
                     }
                 }, function (error, response, body) {
                     var json = JSON.parse(body);
-                    console.log('too short password:', json);
-                    expect(json).to.be.an('object')
-                        .with.property('error');
+                    expect(json).to.have.property('error');
                     expect(error).to.not.exists;
                     expect(response.statusCode).to.equal(500);
                     done();
@@ -110,14 +107,12 @@ describe('API:', function () {
                     url: url + '/users/register',
                     form: {
                         login: 't',
-                        password: '123',
+                        password: '12345',
                         name: 'test'
                     }
                 }, function (error, response, body) {
                     var json = JSON.parse(body);
-                    console.log('too short login:', json);
-                    expect(json).to.be.an('object')
-                        .with.property('error');
+                    expect(json).to.have.property('error');
                     expect(error).to.not.exists;
                     expect(response.statusCode).to.equal(500);
                     done();
@@ -125,25 +120,61 @@ describe('API:', function () {
             });
 
         });
-    });
 
-    it.skip('/users/login', function (done) {
-        request.post({
-            url: url + '/users/login',
-            form: {
-                login: 'test@test.ru',
-                password: '123'
-            }
-        }, function (error, response, body) {
-            var json = JSON.parse(body);
-            expect(json).to.be.an('object')
-                .with.property('token')
-                    .that.is.a('string')
-                    .that.length.of.at.least(20);
-            expect(error).to.not.exists;
-            expect(response.statusCode).to.equal(200);
-            done();
-        });
+        describe('/login', function() {
+
+            it('successful login', function (done) {
+                request.post({
+                    url: url + '/users/login',
+                    form: {
+                        login: 'test@test.ru',
+                        password: '12345'
+                    }
+                }, function (error, response, body) {
+                    var json = JSON.parse(body);
+                    expect(json).to.be.an('object')
+                        .with.property('token')
+                        .that.is.a('string')
+                        .that.length.of.at.least(20);
+                    expect(error).to.not.exists;
+                    expect(response.statusCode).to.equal(200);
+                    done();
+                });
+            });
+
+            it('incorrect login', function (done) {
+                request.post({
+                    url: url + '/users/login',
+                    form: {
+                        login: 'incorrect@test.ru',
+                        password: '12345'
+                    }
+                }, function (error, response, body) {
+                    var json = JSON.parse(body);
+                    expect(json).to.have.property('error');
+                    expect(error).to.not.exists;
+                    expect(response.statusCode).to.equal(500);
+                    done();
+                });
+            });
+
+            it('incorrect password', function (done) {
+                request.post({
+                    url: url + '/users/login',
+                    form: {
+                        login: 'test@test.ru',
+                        password: 'incorrect'
+                    }
+                }, function (error, response, body) {
+                    var json = JSON.parse(body);
+                    expect(json).to.have.property('error');
+                    expect(error).to.not.exists;
+                    expect(response.statusCode).to.equal(500);
+                    done();
+                });
+            });
+
+        })
     });
 
 });
