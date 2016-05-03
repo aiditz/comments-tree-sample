@@ -66,18 +66,18 @@ class CommentModel extends CommentMongooseModel {
      * @returns {Promise.<[CommentMongooseModel]>}
      */
     static getTree() {
-        return CommentMongooseModel.find().populate('author', {_id: 1, login: 1}).lean().exec().then((doc) => {
+        return CommentMongooseModel.find().populate('author', {_id: 1, login: 1}).lean().exec().then((docs) => {
             var itemsById = {};
             var root = [];
             var i;
             var item;
-            for (i = 0; i < doc.length; i++) {
-                item = doc[i];
+            for (i = 0; i < docs.length; i++) {
+                item = docs[i];
                 item.children = [];
                 itemsById[item._id] = item;
             }
-            for (i = 0; i < doc.length; i++) {
-                item = doc[i];
+            for (i = 0; i < docs.length; i++) {
+                item = docs[i];
                 if (item.parent) {
                     if (itemsById[item.parent]) {
                         itemsById[item.parent].children.push(item);
@@ -103,15 +103,15 @@ class CommentModel extends CommentMongooseModel {
         if (typeof commentId === 'string') {
             commentId = new ObjectId(commentId);
         }
-        return CommentMongooseModel.find({parent: commentId}, {_id: 1}).lean().then((doc) => {
-            if (doc.length === 0) {
+        return CommentMongooseModel.find({parent: commentId}, {_id: 1}).lean().then((docs) => {
+            if (docs.length === 0) {
                 return 1;
             }
             else {
                 let promises = [];
                 let i;
-                for (i = 0; i < doc.length; i++) {
-                    promises.push(this.getSubtreeDepth(doc[i]._id));
+                for (i = 0; i < docs.length; i++) {
+                    promises.push(this.getSubtreeDepth(docs[i]._id));
                 }
                 return Promise.all(promises).then((results) => {
                     return 1 + Math.max.apply(null, results);
@@ -132,7 +132,7 @@ class CommentModel extends CommentMongooseModel {
         if (typeof commentId === 'string') {
             commentId = new ObjectId(commentId);
         }
-        return CommentMongooseModel.find({_id: commentId}, {_id: 1, parents: 1}).lean().then((doc) => {
+        return CommentMongooseModel.findById(commentId, {_id: 1, parents: 1}).lean().then((doc) => {
             return 1 + doc.parents? doc.parents.length : 0;
         });
     }
