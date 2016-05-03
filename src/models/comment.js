@@ -13,21 +13,21 @@ var schema = new Schema({
 
 schema.index({parent: 1});
 
-var model = mongoose.model('comment', schema);
+var CommentMongooseModel = mongoose.model('comment', schema);
 
-module.exports = {
+class CommentModel extends CommentMongooseModel {
 
-    create: function (data) {
-        var doc = new model(data);
+    static create (data) {
+        var doc = new CommentMongooseModel(data);
         return doc.save();
-    },
+    }
 
-    getList: function () {
-        return model.find().lean().exec();
-    },
+    static getList () {
+        return CommentMongooseModel.find().lean().exec();
+    }
 
-    getTree: function () {
-        return model.find().lean().exec().then((doc) => {
+    static getTree () {
+        return CommentMongooseModel.find().populate('author', { _id: 1, login: 1 }).lean().exec().then((doc) => {
             var itemsById = {};
             var root = [];
             doc.forEach((item) => {
@@ -46,18 +46,16 @@ module.exports = {
             });
             return root;
         })
-    },
+    }
 
-    getSubtreeDepth: function(commentId) {
+    static getSubtreeDepth(commentId) {
         if (!commentId) {
             commentId = null;
         }
         if (typeof commentId === 'string') {
             commentId = new mongoose.Types.ObjectId(commentId);
         }
-        debugDepth(`called getSubtreeDepth(${commentId})`);
-        return model.find({parent: commentId}, {_id: 1}).lean().then((doc) => {
-            debugDepth(`found ${doc.length} children of the comment #${commentId}`);
+        return CommentMongooseModel.find({parent: commentId}, { _id: 1 }).populate('author').lean().then((doc) => {
             if (doc.length === 0) {
                 return 1;
             }
@@ -68,11 +66,11 @@ module.exports = {
                     promises.push(this.getSubtreeDepth(doc[i]._id))
                 }
                 return Promise.all(promises).then((results) => {
-                    var result = 1 + Math.max.apply(null, results);
-                    debugDepth(`children depths of the comment #${commentId}: ${results}; subtree depth: ${result}`);
-                    return result;
+                    return 1 + Math.max.apply(null, results);
                 })
             }
         })
     }
-};
+}
+
+module.exports = CommentModel;

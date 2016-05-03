@@ -22,7 +22,9 @@ router.use('/login',
 );
 
 router.get('/sortedByComments', function(req, res, next) {
-
+    UserModel.sortedByComments()
+        .then(res.json.bind(res))
+        .catch(next);
 });
 
 module.exports = router;
