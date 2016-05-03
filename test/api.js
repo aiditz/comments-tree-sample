@@ -1,50 +1,15 @@
 'use strict';
 
-var jwt = require('jsonwebtoken');
 var expect = require('chai').expect;
 var request = require('request');
-var mongoose = require('mongoose');
+var ObjectId = require('mongoose').Types.ObjectId;
 
-var config = require('../src/config');
-var db = require('../src/core/mongoose').connection;
+var UserModel = require('../src/models/user');
 
 var url = 'http://localhost:3000';
-var server;
-var testTokens = [];
-var testCommentId = null;
 
 describe('API:', function () {
-
-    before('setup http server and mongo connection', function (done) {
-        this.timeout(10000);
-        server = require('../src/app');
-        server.on('listening', function () {
-            if (db.readyState === 1) { // connected
-                return done();
-            }
-            else {
-                db.on('connected', done);
-            }
-        });
-    });
-
-    before(function () {
-        return Promise.all([
-            db.collection('users').remove(),
-            db.collection('comments').remove()
-        ]);
-    });
-
-    after(function () {
-        return Promise.all([
-            db.collection('users').remove(),
-            db.collection('comments').remove()
-        ]);
-    });
-
-    after(function (done) {
-        server.close(done);
-    });
+    var testTokens = [];
 
     it('GET /', function (done) {
         request(url, function (error, response, body) {
@@ -194,8 +159,8 @@ describe('API:', function () {
     });
 
     describe('/comments', function () {
-        const COMMENTS_COUNT = 100;
-        const NEST_FACTOR = 10; // create subtree every n comments
+        const COMMENTS_COUNT = 40;
+        const NEST_FACTOR = 8; // create subtree every n comments
         var currentDepth = 0;
         var parentCommentId = '';
 
@@ -242,8 +207,8 @@ describe('API:', function () {
             });
 
             it('pass correct token of non-existent user', function (done) {
-                var userId = new mongoose.Types.ObjectId();
-                var token = jwt.sign({_id: userId.toString()}, config.jwt.secret, config.jwt.options);
+                var userId = new ObjectId();
+                var token = UserModel.generateJwt({_id: userId});
                 request.post({
                     url: url + '/comments',
                     form: {

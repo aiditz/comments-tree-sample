@@ -22,12 +22,16 @@ schema.index({login: 1}, {unique: true});
 
 schema.statics.PUBLIC_FIELDS = {hash: 0, __v: 0};
 
+schema.statics.generateJwt = function(user) {
+    return jwt.sign({_id: user._id.toString()}, config.jwt.secret, config.jwt.options);
+};
+
 schema.methods.validPassword = function (password) {
     return passwordHash.verify(password, this.hash);
 };
 
 schema.methods.generateJwt = function () {
-    return jwt.sign({_id: this._id.toString()}, config.jwt.secret, config.jwt.options);
+    return this.constructor.generateJwt(this);
 };
 
 schema.methods.incCommentsCounter = function () {
