@@ -1,14 +1,12 @@
 'use strict';
 
 module.exports = function (err, req, res, next) {
+    console.error(err);
+
     var json = {
-        code: err.code,
-        msg: err.message
+        name: err.name,
+        message: err.message
     };
 
-    if (process.env.NODE_ENV !== 'production') {
-        json.stack = err.stack;
-    }
-
-    res.status(500).json(err);
+    res.status(500).json(json);
 };

@@ -9,8 +9,8 @@
     "start": "node src/app.js",
     "debug": "node --debug src/app.js"
   },
-  "engines" : {
-    "node" : ">=5.8.0"
+  "engines": {
+    "node": ">=5.8.0"
   },
   "dependencies": {
     "body-parser": "^1.15.0",
@@ -19,9 +19,13 @@
     "mongoose": "^4.4.14",
     "passport": "^0.3.2",
     "passport-jwt": "^2.0.0",
-    "passport-local": "^1.0.0"
+    "passport-local": "^1.0.0",
+    "password-hash": "^1.2.2"
   },
   "devDependencies": {
-    "debug": "^2.2.0"
+    "chai": "^3.5.0",
+    "debug": "^2.2.0",
+    "mocha": "^2.4.5",
+    "request": "^2.72.0"
   }
 }
