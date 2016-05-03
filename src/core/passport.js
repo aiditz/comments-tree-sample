@@ -10,8 +10,8 @@ var UserModel = require('../models/user');
 passport.use(new LocalStrategy({
     usernameField: 'login'
 }, function (username, password, done) {
-    UserModel.login(username, password).then((user) => {
-        return done(null, user);
+    UserModel.login(username, password).then((token) => {
+        return done(null, token);
     }).catch(done);
 }));
 

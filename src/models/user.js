@@ -9,7 +9,7 @@ var jwt = require('jsonwebtoken');
 var schema = new Schema({
     login: {
         type: String,
-        minlength: 5,
+        minlength: 3,
         trim: true,
         required: true
     },

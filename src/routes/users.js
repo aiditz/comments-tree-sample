@@ -10,14 +10,14 @@ router.use('/register', function (req, res, next) {
         data = req.query;
     }
     UserModel.register(data.login, data.password, {name: data.name})
-        .then(res.json.bind(res))
+        .then((token) => res.json({token: token}))
         .catch(next);
 });
 
 router.use('/login',
     passport.authenticate('local', {session: false}),
     function (req, res, next) {
-        res.json(req.user);
+        res.json({token: req.user});
     }
 );
 
