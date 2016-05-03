@@ -4,7 +4,8 @@ module.exports = function (err, req, res, next) {
     console.error(err);
 
     var json = {
-        name: err.name,
+        error: err.name,
+        code: err.code,
         message: err.message
     };
 

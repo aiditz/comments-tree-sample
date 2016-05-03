@@ -40,21 +40,25 @@ var UserMongooseModel = mongoose.model('user', schema);
 class UserModel extends UserMongooseModel {
 
     static register(login, password, profile) {
-        return UserMongooseModel.findOne({login: login}, {_id: 1}).lean().then((doc) => {
-            if (doc) {
-                throw new Error('Username is busy');
-            }
-
-            var user = new UserMongooseModel(profile);
-            user.login = login;
-            user.hash = passwordHash.generate(password);
-            if (!user.name) {
-                user.name = login;
-            }
-            return user.save().then((doc) => {
+        var user;
+        return Promise.resolve()
+            .then(() => {
+                var hash = passwordHash.generate(password);
+                user = new UserMongooseModel(profile);
+                user.login = login;
+                user.hash = hash;
+                if (!user.name) {
+                    user.name = login;
+                }
+            })
+            .then(() => user.save())
+            .then((doc) => {
                 return doc.generateJwt();
+            }, (err) => {
+                if (err.code == 11000) { // duplicate entry
+                    throw new Error('Username busy');
+                }
             });
-        });
     }
 
     static login(login, password) {
