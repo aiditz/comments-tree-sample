@@ -19,6 +19,11 @@ var CommentMongooseModel = mongoose.model('comment', schema);
 
 class CommentModel extends CommentMongooseModel {
 
+    /**
+     * Create a comment
+     * @param {Object} data
+     * @returns {Promise.<CommentMongooseModel>} created comment
+     */
     static create(data) {
         return Promise.resolve()
             .then(() => {
@@ -47,10 +52,19 @@ class CommentModel extends CommentMongooseModel {
             });
     }
 
+    /**
+     * Get all the comments as an array
+     * @returns {Promise.<[CommentMongooseModel]>}
+     */
     static getList() {
         return CommentMongooseModel.find().lean().exec();
     }
 
+
+    /**
+     * Get all the comments as a tree
+     * @returns {Promise.<[CommentMongooseModel]>}
+     */
     static getTree() {
         return CommentMongooseModel.find().populate('author', {_id: 1, login: 1}).lean().exec().then((doc) => {
             var itemsById = {};

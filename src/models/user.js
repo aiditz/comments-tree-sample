@@ -20,20 +20,41 @@ var schema = new Schema({
 
 schema.index({login: 1}, {unique: true});
 
+/**
+ * Public profile fields in Mongo format
+ * @type {Object}
+ */
 schema.statics.PUBLIC_FIELDS = {hash: 0, __v: 0};
 
+/**
+ * Generates a token from a user object
+ * @param user
+ * @returns {String}
+ */
 schema.statics.generateJwt = function(user) {
     return jwt.sign({_id: user._id.toString()}, config.jwt.secret, config.jwt.options);
 };
 
+/**
+ * Checks if password is valid
+ * @param {String} password
+ * @returns {Boolean}
+ */
 schema.methods.validPassword = function (password) {
     return passwordHash.verify(password, this.hash);
 };
 
+/**
+ * Generates a token for the user
+ * @returns {String}
+ */
 schema.methods.generateJwt = function () {
     return this.constructor.generateJwt(this);
 };
 
+/**
+ * Increases user's comments counter
+ */
 schema.methods.incCommentsCounter = function () {
     this.comments_count++;
     return this.save();
@@ -43,6 +64,13 @@ var UserMongooseModel = mongoose.model('user', schema);
 
 class UserModel extends UserMongooseModel {
 
+    /**
+     * Register a new user
+     * @param {String} login
+     * @param {String} password
+     * @param {Object} profile
+     * @returns {Promise.<String>} token to access api
+     */
     static register(login, password, profile) {
         var user;
         return Promise.resolve()
@@ -71,6 +99,12 @@ class UserModel extends UserMongooseModel {
             });
     }
 
+    /**
+     * Log in via login & password
+     * @param {String} login
+     * @param {String} password
+     * @returns {Promise.<String>} token to access api
+     */
     static login(login, password) {
         return UserMongooseModel.findOne({login: login}).then((doc) => {
             if (!doc) {
@@ -85,6 +119,10 @@ class UserModel extends UserMongooseModel {
         });
     }
 
+    /**
+     * Get a list of all users sorted by their comments count
+     * @returns {Promise.<[]>}
+     */
     static sortedByComments() {
         return UserMongooseModel.find({}, this.PUBLIC_FIELDS).sort({comments_count: -1}).limit(1000).exec();
     }
