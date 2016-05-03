@@ -146,7 +146,7 @@ describe('API:', function () {
     });
 
     describe('/comments', function () {
-        const COMMENTS_COUNT = 40;
+        const COMMENTS_COUNT = 500;
         const NEST_FACTOR = 8; // create subtree every n comments
         var currentDepth = 0;
         var parentCommentId = '';
@@ -233,23 +233,25 @@ describe('API:', function () {
             });
         });
 
-        describe('/depth', function () {
-            it('get root tree maximum depth', function (done) {
-                this.timeout(10000);
-                request(url + '/comments/depth', function (error, response, body) {
-                    var json = JSON.parse(body);
-                    expect(json).to.be.a('number', currentDepth);
-                    expect(response.statusCode).to.equal(200);
-                    done();
+        ['depth', 'depth2'].forEach(function (method) {
+            describe('/' + method, function () {
+                it('get root tree maximum depth', function (done) {
+                    this.timeout(10000);
+                    request(url + '/comments/' + method, function (error, response, body) {
+                        var json = JSON.parse(body);
+                        expect(json).to.be.a('number', currentDepth);
+                        expect(response.statusCode).to.equal(200);
+                        done();
+                    });
                 });
-            });
-            it('get last subtree depth', function (done) {
-                this.timeout(10000);
-                request(url + '/comments/depth?commentId=' + parentCommentId, function (error, response, body) {
-                    var json = JSON.parse(body);
-                    expect(json).to.be.a('number', 2);
-                    expect(response.statusCode).to.equal(200);
-                    done();
+                it('get last subtree depth', function (done) {
+                    this.timeout(10000);
+                    request(url + '/comments/' + method + '?commentId=' + parentCommentId, function (error, response, body) {
+                        var json = JSON.parse(body);
+                        expect(json).to.be.a('number', 2);
+                        expect(response.statusCode).to.equal(200);
+                        done();
+                    });
                 });
             });
         });

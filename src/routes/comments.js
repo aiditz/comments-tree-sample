@@ -43,4 +43,12 @@ router.get('/depth',
     }
 );
 
+router.get('/depth2',
+    function (req, res, next) {
+        CommentModel.getSubtreeDepth2(req.query.commentId)
+            .then(res.json.bind(res))
+            .catch(next);
+    }
+);
+
 module.exports = router;

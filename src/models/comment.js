@@ -3,9 +3,11 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 var debugDepth = require('debug')('models/comment/depth');
+var ObjectId = mongoose.Types.ObjectId;
 
 var schema = new Schema({
     parent: {type: Schema.Types.ObjectId, ref: 'comment'},
+    parents: [{type: Schema.Types.ObjectId}], // for another method of depth calculation
     author: {type: Schema.Types.ObjectId, ref: 'user', required: true},
     text: {type: String, required: true},
     date: {type: Date, default: Date.now}
@@ -18,8 +20,31 @@ var CommentMongooseModel = mongoose.model('comment', schema);
 class CommentModel extends CommentMongooseModel {
 
     static create(data) {
-        var doc = new CommentMongooseModel(data);
-        return doc.save();
+        return Promise.resolve()
+            .then(() => {
+                if (data.parent) {
+                    // Need to retrieve parent's parents
+                    return CommentMongooseModel.findById({_id: data.parent}, {parents: 1}).lean()
+                        .then((doc) => {
+                            if (!doc) {
+                                return new Error('Parent comment isn\'t exists');
+                            }
+                            var parents = doc.parents? doc.parents : [];
+                            parents.push(doc._id);
+                            return parents;
+                        });
+                }
+                else {
+                    return null;
+                }
+            })
+            .then((parents) => {
+                var doc = new CommentMongooseModel(data);
+                if (parents) {
+                    doc.parents = parents;
+                }
+                return doc.save();
+            });
     }
 
     static getList() {
@@ -30,11 +55,15 @@ class CommentModel extends CommentMongooseModel {
         return CommentMongooseModel.find().populate('author', {_id: 1, login: 1}).lean().exec().then((doc) => {
             var itemsById = {};
             var root = [];
-            doc.forEach((item) => {
+            var i;
+            var item;
+            for (i = 0; i < doc.length; i++) {
+                item = doc[i];
                 item.children = [];
                 itemsById[item._id] = item;
-            });
-            doc.forEach((item) => {
+            }
+            for (i = 0; i < doc.length; i++) {
+                item = doc[i];
                 if (item.parent) {
                     if (itemsById[item.parent]) {
                         itemsById[item.parent].children.push(item);
@@ -43,19 +72,24 @@ class CommentModel extends CommentMongooseModel {
                 else {
                     root.push(item);
                 }
-            });
+            }
             return root;
         });
     }
 
+    /**
+     * Method 1: full scan
+     * @param {ObjectId|String|null} commentId root comment
+     * @returns {Promise.<Number>}
+     */
     static getSubtreeDepth(commentId) {
         if (!commentId) {
             commentId = null;
         }
         if (typeof commentId === 'string') {
-            commentId = new mongoose.Types.ObjectId(commentId);
+            commentId = new ObjectId(commentId);
         }
-        return CommentMongooseModel.find({parent: commentId}, {_id: 1}).populate('author').lean().then((doc) => {
+        return CommentMongooseModel.find({parent: commentId}, {_id: 1}).lean().then((doc) => {
             if (doc.length === 0) {
                 return 1;
             }
@@ -69,6 +103,23 @@ class CommentModel extends CommentMongooseModel {
                     return 1 + Math.max.apply(null, results);
                 });
             }
+        });
+    }
+
+    /**
+     * Method 2: using comment.parents field
+     * @param {ObjectId|String|null} commentId root comment
+     * @returns {Promise.<Number>}
+     */
+    static getSubtreeDepth2(commentId) {
+        if (!commentId) {
+            commentId = null;
+        }
+        if (typeof commentId === 'string') {
+            commentId = new ObjectId(commentId);
+        }
+        return CommentMongooseModel.find({_id: commentId}, {_id: 1, parents: 1}).lean().then((doc) => {
+            return 1 + doc.parents? doc.parents.length : 0;
         });
     }
 }
