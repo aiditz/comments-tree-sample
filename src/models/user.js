@@ -19,6 +19,7 @@ var schema = new Schema({
 });
 
 schema.index({login: 1}, {unique: true});
+schema.index({comments_count: 1});
 
 /**
  * Public profile fields in Mongo format
