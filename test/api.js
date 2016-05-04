@@ -8,6 +8,9 @@ var UserModel = require('../src/models/user');
 
 var url = 'http://localhost:3000';
 
+const COMMENTS_COUNT = 100;
+const COMMENTS_NEST_FACTOR = 8; // create subtree every N comments
+
 describe('API:', function () {
     var testTokens = [];
 
@@ -42,7 +45,7 @@ describe('API:', function () {
                 });
             });
 
-            it('busy username', function (done) {
+            it('error: busy username', function (done) {
                 request.post({
                     url: url + '/users/register',
                     form: {
@@ -58,7 +61,7 @@ describe('API:', function () {
                 });
             });
 
-            it('too short password', function (done) {
+            it('error: too short password', function (done) {
                 request.post({
                     url: url + '/users/register',
                     form: {
@@ -111,7 +114,7 @@ describe('API:', function () {
                 });
             });
 
-            it('incorrect login', function (done) {
+            it('error: incorrect login', function (done) {
                 request.post({
                     url: url + '/users/login',
                     form: {
@@ -127,7 +130,7 @@ describe('API:', function () {
                 });
             });
 
-            it('incorrect password', function (done) {
+            it('error: incorrect password', function (done) {
                 request.post({
                     url: url + '/users/login',
                     form: {
@@ -146,8 +149,6 @@ describe('API:', function () {
     });
 
     describe('/comments', function () {
-        const COMMENTS_COUNT = 500;
-        const NEST_FACTOR = 8; // create subtree every n comments
         var currentDepth = 0;
         var parentCommentId = '';
 
@@ -169,11 +170,11 @@ describe('API:', function () {
                         expect(response.statusCode).to.equal(200);
 
                         // we need to go deeper...
-                        if (i % NEST_FACTOR === 0) {
-                            currentDepth++;
+                        if (i % COMMENTS_NEST_FACTOR === 0) {
                             if (i > 0) {
                                 parentCommentId = json;
                             }
+                            currentDepth++;
                         }
 
                         done();
@@ -181,7 +182,7 @@ describe('API:', function () {
                 });
             }
 
-            it('pass incorrect token', function (done) {
+            it('error: incorrect token', function (done) {
                 request.post({
                     url: url + '/comments',
                     form: {
@@ -194,7 +195,7 @@ describe('API:', function () {
                 });
             });
 
-            it('pass correct token of non-existent user', function (done) {
+            it('error: correct token of non-existent user', function (done) {
                 var userId = new ObjectId();
                 var token = UserModel.generateJwt({_id: userId});
                 request.post({
@@ -222,24 +223,32 @@ describe('API:', function () {
         });
 
         describe('/asTree', function () {
-            it('get comments tree', function (done) {
+            it('get root comments tree', function (done) {
                 this.timeout(10000);
                 request(url + '/comments/asTree', function (error, response, body) {
                     var json = JSON.parse(body);
-                    expect(json).to.have.deep.property('[' + NEST_FACTOR + '].children[0].children');
+                    expect(json).to.be.an('array').and.length.at.most(COMMENTS_NEST_FACTOR + 1);
+                    expect(response.statusCode).to.equal(200);
+                    done();
+                });
+            });
+            it('get comments subtree', function (done) {
+                request(url + '/comments/asTree?commentId=' + parentCommentId, function (error, response, body) {
+                    var json = JSON.parse(body);
+                    expect(json).to.be.an('array');
                     expect(response.statusCode).to.equal(200);
                     done();
                 });
             });
         });
 
-        ['depth', 'depth2'].forEach(function (method) {
+        ['depth', 'depth2', 'depth3'].forEach(function (method) {
             describe('/' + method, function () {
                 it('get root tree maximum depth', function (done) {
                     this.timeout(10000);
                     request(url + '/comments/' + method, function (error, response, body) {
                         var json = JSON.parse(body);
-                        expect(json).to.be.a('number', currentDepth);
+                        expect(json).to.be.a('number').that.equal(currentDepth);
                         expect(response.statusCode).to.equal(200);
                         done();
                     });
@@ -248,7 +257,7 @@ describe('API:', function () {
                     this.timeout(10000);
                     request(url + '/comments/' + method + '?commentId=' + parentCommentId, function (error, response, body) {
                         var json = JSON.parse(body);
-                        expect(json).to.be.a('number', 2);
+                        expect(json).to.be.a('number').that.equal(2);
                         expect(response.statusCode).to.equal(200);
                         done();
                     });
@@ -257,7 +266,7 @@ describe('API:', function () {
         });
     });
 
-    describe('/users', function() {
+    describe('/users', function () {
         describe('/sortedByComments', function () {
             it('should get a list of users sorted by comments count', function (done) {
                 request(url + '/users/sortedByComments', function (error, response, body) {

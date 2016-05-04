@@ -61,9 +61,9 @@ schema.methods.incCommentsCounter = function () {
     return this.save();
 };
 
-var UserMongooseModel = mongoose.model('user', schema);
+var MongooseModel = mongoose.model('user', schema);
 
-class UserModel extends UserMongooseModel {
+class UserModel extends MongooseModel {
 
     /**
      * Register a new user
@@ -80,7 +80,7 @@ class UserModel extends UserMongooseModel {
                     throw new Error('Minimum password length is 5');
                 }
                 var hash = passwordHash.generate(password);
-                user = new UserMongooseModel(profile);
+                user = new MongooseModel(profile);
                 user.login = login;
                 user.hash = hash;
                 if (!user.name) {
@@ -107,7 +107,7 @@ class UserModel extends UserMongooseModel {
      * @returns {Promise.<String>} token to access api
      */
     static login(login, password) {
-        return UserMongooseModel.findOne({login: login}).then((doc) => {
+        return MongooseModel.findOne({login: login}).then((doc) => {
             if (!doc) {
                 throw new Error('Incorrect login');
             }
@@ -125,7 +125,7 @@ class UserModel extends UserMongooseModel {
      * @returns {Promise.<[]>}
      */
     static sortedByComments() {
-        return UserMongooseModel.find({}, this.PUBLIC_FIELDS).sort({comments_count: -1}).limit(1000).exec();
+        return MongooseModel.find({}, this.PUBLIC_FIELDS).sort({comments_count: -1}).limit(1000).exec();
     }
 
 }
