@@ -8,8 +8,8 @@ var UserModel = require('../src/models/user');
 
 var url = 'http://localhost:3000';
 
-const COMMENTS_COUNT = 100;
-const COMMENTS_NEST_FACTOR = 8; // create subtree every N comments
+const COMMENTS_COUNT = 30;
+const COMMENTS_NEST_FACTOR = 5; // create subtree every N comments
 
 describe('API:', function () {
     var testTokens = [];

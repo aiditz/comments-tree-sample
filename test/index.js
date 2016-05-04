@@ -25,8 +25,8 @@ before(function () {
 
 after(function () {
     return Promise.all([
-       // db.collection('users').remove(),
-        //db.collection('comments').remove()
+        db.collection('users').remove(),
+        db.collection('comments').remove()
     ]);
 });
 
